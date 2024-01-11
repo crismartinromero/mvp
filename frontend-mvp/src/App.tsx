@@ -17,16 +17,13 @@ function App() {
     setNames(prevNamesArray => [...prevNamesArray,newUser])
   }
 
-  React.useEffect(() => {
+  const handleHitBack = React.useCallback(async () => {
     // Make a GET request to the server
-    fetch('http://localhost:4000')
-      .then((response) => response.json())
-      .then((responseData) => {
-        setData(responseData.message);
-      })
-      .catch((error) => console.error('Error fetching data:', error));
-  }, []);
-
+    const result = await fetch('http://localhost:4000');
+    const data = await result.json();
+    console.log(data);
+    // setData(responseData.message);
+  }, [setData])
 
   return (
     <div className="container">
@@ -43,6 +40,7 @@ function App() {
         {names.map(name=><li>{name}</li>)}
       </ul>
       <p>{data}</p>
+      <Button className="button" variant="contained" onClick={handleHitBack}>BACK!</Button>
     </div>
     
   );
