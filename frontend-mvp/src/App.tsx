@@ -1,48 +1,65 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-import Button from '@mui/material/Button';
+import React from "react";
+import "./App.css";
+import Button from "@mui/material/Button";
+
+// this shoudn't be here
+interface User {
+  name: string;
+  email: string;
+}
 
 function App() {
-  
-  const [names,setNames] = React.useState(['Pepito Grillo','Santiago Illi','Blenza'])
-  const [newUser,setNewUser] = React.useState('')
-  const [data, setData] = React.useState('start api')
+  const [names, setNames] = React.useState<string[]>([]);
+  const [newUser, setNewUser] = React.useState("");
 
-  function handleChange (event:any) {
-    setNewUser(event.target.value)
+  function handleChange(event: any) {
+    setNewUser(event.target.value);
   }
 
   function addUser() {
-    setNames(prevNamesArray => [...prevNamesArray,newUser])
+    // TODO: Add it to the db
+    setNames((prevNamesArray) => [...prevNamesArray, newUser]);
   }
 
-  const handleHitBack = React.useCallback(async () => {
+  const getAndSetUsers = React.useCallback(async () => {
     // Make a GET request to the server
-    const result = await fetch('http://localhost:4000');
-    const data = await result.json();
-    console.log(data);
-    // setData(responseData.message);
-  }, [setData])
+    const result = await fetch("http://localhost:4000/users");
+    const { users } = await result.json();
+    console.log(users);
+    setNames(users.map(({ name, email }: User) => `${name} - ${email}`));
+  }, []);
+
+  // Esto lo que hace es que la primera vez te traiga los users de la DB
+  React.useEffect(() => {
+    async function asyncCall() {
+      await getAndSetUsers();
+    }
+    asyncCall();
+  }, [getAndSetUsers]);
 
   return (
     <div className="container">
-      <label className="userInputLine">Ingrese nombre de Usuario: 
-        <input 
-          type='text' 
-          placeholder='Ingrese nombre'
-          onChange={handleChange}>
-        </input>
+      <label className="userInputLine">
+        Ingrese nombre de Usuario:
+        <input
+          type="text"
+          placeholder="Ingrese nombre"
+          onChange={handleChange}
+        ></input>
       </label>
-      <Button className="button" variant="contained" onClick={addUser}>Ingresar</Button>
-      <h3 className='list'>Lista de usuarios:</h3>
+      <Button className="button" variant="contained" onClick={addUser}>
+        Ingresar
+      </Button>
+      <h3 className="list">Lista de usuarios:</h3>
       <ul>
-        {names.map(name=><li>{name}</li>)}
+        {names.map((name, i) => (
+          <li key={i}>{name}</li>
+        ))}
       </ul>
-      <p>{data}</p>
-      <Button className="button" variant="contained" onClick={handleHitBack}>BACK!</Button>
+      <Button className="button" variant="contained" onClick={getAndSetUsers}>
+        Refresh users
+      </Button>
     </div>
-    
   );
 }
 
